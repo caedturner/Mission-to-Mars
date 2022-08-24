@@ -21,9 +21,9 @@ def index():
 def scrape():
     mars = mongo.db.mars
     mars_data = scraping.scrape_all()
-    mare.update_one({}, {"$set":mars_data}, upsert=True)
+    mars.update_one({}, {"$set":mars_data}, upsert=True)
     return redirect('/', code=302)
 
 # Tell Flask to run
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)

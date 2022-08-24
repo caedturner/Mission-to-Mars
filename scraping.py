@@ -20,8 +20,12 @@ def scrape_all():
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
-        "last_modified": dt.datetime.now()
+        "hemispheres": hemispheres(browser),
+        "last_modified": dt.datetime.now() 
+        
+        
     }
+
     # Stop the webdriver and return data
     browser.quit()
     return data
@@ -53,7 +57,7 @@ def mars_news(browser):
     try:
         slide_elem = news_soup.select_one('div.list_text')
         # Use the parent element to find the first 'a' tag and save it as 'news title'
-        news_title = slide_elem.find('div', class_=content_title).get_text()
+        news_title = slide_elem.find('div', class_='content_title').get_text()
         # Use the parent element to find the paragraph text.
         news_p = slide_elem.find('div', class_='article_teaser_body').get_text()
 
@@ -79,10 +83,10 @@ def featured_image(browser):
     img_soup = soup(html, 'html.parser')
 
     # Find the relative image url
-    #img_url_rel = img_soup.find('img', class_='fancybox-image').get('src')
+    img_url_rel = img_soup.find('img', class_='fancybox-image').get('src')
     
 
-    #img_url = f'https://spaceimages-mars.com/{img_url_rel}'
+    img_url = f'https://spaceimages-mars.com/{img_url_rel}'
     
     # Add a Try/Except for error handling
     try:
@@ -91,7 +95,7 @@ def featured_image(browser):
 
     except AttributeError:
         return None
-    
+
     return img_url
 
 # Scrape the Facts Table
@@ -108,8 +112,34 @@ def mars_facts():
     # Convert DataFrame to HTML format, add bootstrap
     return df.to_html()
     
-    
-    
+    # Adding mars hemispheres
+def hemispheres(browser):
+    # 2. Create a list to hold the images and titles.
+    hemisphere_image_urls = []
+
+    # 3. Write code to retrieve the image urls and titles for each hemisphere.
+    links = browser.find_by_css('a.product-item h3')
+
+    # Loop to click hemisphere link - find full resolution image - 
+    #retrieve full resolution image URL string and title of image - 
+    # go back and get the next Hemisphere
+    for i in range(len(links)):
+        # Create a dictionarty to hold data scraped
+        hemisphere = {}
+        # Find and click on the link to the image
+        browser.find_by_css('a.product-item h3')[i].click()
+        
+        # Once clicked - sample displays the full resolution image we want
+        image_link = browser.links.find_by_text('Sample').first
+        hemisphere["img_url"] = image_link["href"]
+        
+        # Scrape the title
+        hemisphere["title"] = browser.find_by_css("h2.title").text
+        hemisphere_image_urls.append(hemisphere)
+        
+        #navigate back to the beginning to get the next hemisphere image.
+        browser.back()
+ 
 if __name__ == "__main__":
     #if runnung as script, print scraped data
     print(scrape_all())
